@@ -1,0 +1,71 @@
+FROM debian:bullseye-slim
+
+LABEL maintainer="Ihr Name <Ihre E-Mail-Adresse>"
+LABEL org.opencontainers.image.source="https://github.com/IhrGitHubBenutzername/IhrRepositoryName"
+
+# Shell-Einstellungen für Fehlerbehandlung
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Installation der erforderlichen Pakete und SteamCMD
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        lib32gcc-s1 \
+        lib32stdc++6 \
+        python3 \
+        wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /steamcmd \
+    && wget -qO- 'https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz' | tar zxf - -C /steamcmd
+
+# Umgebungsvariablen für den Arma-3-Server
+ENV ARMA_BINARY=./arma3server
+ENV ARMA_CONFIG=server.cfg
+ENV ARMA_PARAMS=
+ENV ARMA_PROFILE=server
+ENV ARMA_WORLD=Tanoa
+ENV ARMA_LIMITFPS=1000
+ENV ARMA_CDLC="gm;ws"
+ENV HEADLESS_CLIENTS=0
+ENV HEADLESS_CLIENTS_PROFILE="\$profile-hc-\$i"
+ENV PORT=2302
+ENV STEAM_BRANCH=public
+ENV STEAM_BRANCH_PASSWORD=
+ENV STEAM_ADDITIONAL_DEPOT=
+ENV MODS_LOCAL=true
+ENV MODS_PRESET=
+ENV SKIP_INSTALL=false
+
+# Exponierte Ports für den Arma-3-Server
+EXPOSE 2302/udp
+EXPOSE 2303/udp
+EXPOSE 2304/udp
+EXPOSE 2305/udp
+EXPOSE 2306/udp
+
+# Arbeitsverzeichnis für den Arma-3-Server
+WORKDIR /arma3
+
+# Volumes für persistente Daten
+VOLUME /steamcmd
+VOLUME /arma3/addons
+VOLUME /arma3/enoch
+VOLUME /arma3/expansion
+VOLUME /arma3/jets
+VOLUME /arma3/heli
+VOLUME /arma3/orange
+VOLUME /arma3/argo
+
+# Signal zum Beenden des Containers
+STOPSIGNAL SIGINT
+
+# Kopieren der Startskripte in das Image
+COPY launch.py /launch.py
+COPY workshop.py /workshop.py
+COPY local.py /local.py
+COPY keys.py /keys.py
+
+# Startbefehl für den Arma-3-Server
+CMD ["python3", "/launch.py"]
