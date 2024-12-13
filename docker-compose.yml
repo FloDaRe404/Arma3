@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  arma3server:
+    image: ghcr.io/brettmayson/arma3server:latest
+    ports:
+      - "${ARMA_PORT}:${ARMA_PORT}/udp"
+      - "$((ARMA_PORT+1)):$((ARMA_PORT+1))/udp"
+      - "$((ARMA_PORT+2)):$((ARMA_PORT+2))/udp"
+      - "$((ARMA_PORT+3)):$((ARMA_PORT+3))/udp"
+    volumes:
+      - ./configs:/arma3/configs
+      - ./mpmissions:/arma3/mpmissions
+      - ./mods:/arma3/mods
+      - ./servermods:/arma3/servermods
+      - ./keys:/arma3/keys
+    environment:
+      - STEAM_USER=${STEAM_USER}
+      - STEAM_PASSWORD=${STEAM_PASSWORD}
+      - ARMA_CONFIG=${ARMA_CONFIG}
+      - ARMA_PROFILE=${ARMA_PROFILE}
+      - ARMA_WORLD=${ARMA_WORLD}
+      - ARMA_CDLC=${ARMA_CDLC}
+      - MODS_LOCAL=true
+      - ARMA_MODS=${ARMA_MODS}
+    restart: unless-stopped
